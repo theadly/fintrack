@@ -12,9 +12,9 @@
   --text: #e8e8f0;
   --muted: #6b6b85;
   --header-bg: rgba(10,10,15,0.92);
-  --font-serif: 'Geist', system-ui, sans-serif;
-  --font-sans: 'Geist', system-ui, sans-serif;
-  --font-mono: 'Geist Mono', monospace;
+  --font-serif: 'Figtree', system-ui, sans-serif;
+  --font-sans: 'Figtree', system-ui, sans-serif;
+  --font-mono: 'Figtree', system-ui, sans-serif;
 }
 
 body.light {
