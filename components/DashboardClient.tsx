@@ -138,7 +138,9 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
     const json = await res.json()
     setUploading(false)
     if (!res.ok) {
-      showToast('❌', 'Upload failed', json.error || 'Unknown error', true)
+      const errMsg = json.error || 'Unknown error'
+      const debugInfo = json.debug_preview ? ` — Row preview: ${json.debug_preview.slice(0,2).join(' / ')}` : ''
+      showToast('❌', 'Upload failed', errMsg + debugInfo, true)
       return
     }
     showToast('✅', `${json.added} new transactions added`, `${json.dupes} duplicates skipped · ${txns.length + json.added} total`)
