@@ -1,5 +1,5 @@
 export interface Transaction {
-  id?: string
+  id: string
   user_id?: string
   date: string
   details: string
@@ -7,14 +7,20 @@ export interface Transaction {
   type: 'Debit' | 'Credit'
   status: string
   category: string
+  notes?: string
 }
+
+export const CATEGORIES = [
+  'Food & Dining', 'Transport', 'Groceries', 'Shopping', 'Entertainment',
+  'Tech & Subscriptions', 'Utilities', 'Health & Fitness', 'Lifestyle', 'Other', 'Income'
+]
 
 export function categorize(merchant: string): string {
   const m = merchant.toLowerCase()
-  if (/deliveroo|talabat|careem food|kitopi|one life|onelife|gazebo|bougee|bosnian|orfali|raju|roxy|tribes|kfc|peets|joe and the juice|hadoota|boon coffee|mdd hotel|barnyard|falcone|home bakery|eln london/.test(m)) return 'Food & Dining'
+  if (/deliveroo|talabat|careem food|kitopi|one life|onelife|gazebo|bougee|bosnian|orfali|raju|roxy|tribes|kfc|peets|joe and the juice|hadoota|boon coffee|mdd hotel|barnyard|falcone|home bakery|eln london|tap\*keeta|keeta/.test(m)) return 'Food & Dining'
   if (/careem ride|careem hala|cars taxi|careem tip/.test(m)) return 'Transport'
   if (/amazon grocery|amazon now|waitrose|noon minutes|emarat/.test(m)) return 'Groceries'
-  if (/amazon\.ae|amazon dsv|noon\.com|namshi|adidas|db186 adidas|lefties|temu|retail purchase|flowers|bateel|mamo/.test(m)) return 'Shopping'
+  if (/amazon\.ae|amazon dsv|noon\.com|namshi|adidas|db186 adidas|lefties|temu|retail purchase|flowers|bateel|mamo|samsung/.test(m)) return 'Shopping'
   if (/netflix|apple\.com|spotify|google\*youtube|audible|playstation|fifaus|vox cinemas/.test(m)) return 'Entertainment'
   if (/adobe|google one|google workspace|openai|chatgpt|virgin mobile|du no|smart dubai/.test(m)) return 'Tech & Subscriptions'
   if (/dewa|dubai electricity/.test(m)) return 'Utilities'
