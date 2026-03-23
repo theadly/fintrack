@@ -204,8 +204,8 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
     return (
       <svg width={size} height={size} style={{ flexShrink: 0 }}>
         {paths}
-        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontFamily="Syne,sans-serif" fontSize={13} fontWeight={800}>{'\u20C3'}</text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text)" fontFamily="Syne,sans-serif" fontSize={11} fontWeight={700}>{Math.round(totalSpend / 1000)}K</text>
+        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontFamily="var(--font-serif)" fontSize={13} fontWeight={800}>{'\u20C3'}</text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text)" fontFamily="var(--font-serif)" fontSize={11} fontWeight={700}>{Math.round(totalSpend / 1000)}K</text>
       </svg>
     )
   }
@@ -213,14 +213,14 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
   // ─── RENDER ───────────────────────────────────────────────────────────────
   const s = styles
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-sans)' }}>
 
       {/* Drag overlay */}
       {isDragging && (
         <div style={s.dropOverlay}>
           <div style={s.dropBox}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>📂</div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 22, color: 'var(--accent)' }}>Drop your Mashreq statement</div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 800, fontSize: 22, color: 'var(--accent)' }}>Drop your Mashreq statement</div>
             <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>.xlsx file · new transactions will be merged automatically</div>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
         <div style={{ ...s.toast, borderColor: toast.error ? 'rgba(255,107,107,0.3)' : 'var(--border)' }}>
           <span style={{ fontSize: 18 }}>{toast.icon}</span>
           <div>
-            <div style={{ fontSize: 12, fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>{toast.title}</div>
+            <div style={{ fontSize: 12, fontFamily: 'var(--font-serif)', fontWeight: 700 }}>{toast.title}</div>
             <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 3 }}>{toast.body}</div>
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
 
       {/* Header */}
       <div style={s.header}>
-        <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, letterSpacing: -0.5 }}>
+        <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 800, fontSize: 18, letterSpacing: -0.5 }}>
           ADLY / <span style={{ color: 'var(--accent)' }}>FINTRACK</span>
         </div>
         <div style={s.tabs}>
@@ -338,7 +338,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                       <div style={{ fontSize: 9, color: 'var(--muted)', width: 16, textAlign: 'center' }}>{i + 1}</div>
                       <div style={{ flex: 1, fontSize: 12 }}>{name.length > 22 ? name.slice(0, 22) + '…' : name}</div>
                       <div style={{ fontSize: 10, color: 'var(--muted)', width: 50, textAlign: 'right' }}>{merchantCounts[name]}x</div>
-                      <div style={{ fontSize: 12, color: 'var(--accent2)', fontFamily: 'Syne, sans-serif', fontWeight: 700, width: 80, textAlign: 'right' }}><D amount={amt} /></div>
+                      <div style={{ fontSize: 12, color: 'var(--accent2)', fontFamily: 'var(--font-serif)', fontWeight: 700, width: 80, textAlign: 'right' }}><D amount={amt} /></div>
                     </div>
                   ))}
                 </div>
@@ -482,7 +482,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                             {t.status}
                           </span>
                         </td>
-                        <td style={{ ...s.td, textAlign: 'right' as const, color: t.type === 'Debit' ? 'var(--accent2)' : 'var(--accent)', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>
+                        <td style={{ ...s.td, textAlign: 'right' as const, color: t.type === 'Debit' ? 'var(--accent2)' : 'var(--accent)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>
                           {t.type === 'Debit' ? '-' : '+'}{t.amount.toFixed(2)}
                         </td>
                       </tr>
@@ -517,7 +517,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                 <div key={i} style={{ ...s.insightCard, borderLeftColor: ins.color }}>
                   <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{ins.icon}</div>
                   <div>
-                    <div style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 700, marginBottom: 5 }}>{ins.title}</div>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 13, fontWeight: 700, marginBottom: 5 }}>{ins.title}</div>
                     <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.6 }}>{ins.body}</div>
                     <span style={{ display: 'inline-block', marginTop: 8, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 10, border: `1px solid ${ins.pillColor}22`, background: `${ins.pillColor}08`, color: ins.pillColor }}>
                       {ins.pill}
@@ -651,7 +651,7 @@ function SubscriptionsPage({ txns }: { txns: Transaction[] }) {
                   })}
                 </div>
                 <div style={{ textAlign: 'right' as const }}>
-                  <div style={{ fontFamily: 'Syne, sans-serif', fontSize: 15, fontWeight: 800, color: sub.color }}><D amount={sub.monthly} /></div>
+                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: 15, fontWeight: 800, color: sub.color }}><D amount={sub.monthly} /></div>
                   <div style={{ fontSize: 9, color: 'var(--muted)' }}>/month avg</div>
                 </div>
               </div>
@@ -668,7 +668,7 @@ function SubscriptionsPage({ txns }: { txns: Transaction[] }) {
             <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
               <div style={{ fontSize: 11, flex: 1 }}>{s.name}</div>
-              <div style={{ fontSize: 11, color: 'var(--accent2)', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}><D amount={s.monthly} /></div>
+              <div style={{ fontSize: 11, color: 'var(--accent2)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}><D amount={s.monthly} /></div>
             </div>
           ))}
         </div>
@@ -684,7 +684,7 @@ function SubscriptionsPage({ txns }: { txns: Transaction[] }) {
             <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', background: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
               <div style={{ fontSize: 16 }}>{s.icon}</div>
               <div style={{ flex: 1, fontSize: 11 }}>{s.name}</div>
-              <div style={{ fontSize: 10, color: 'var(--accent3)', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}><D amount={s.monthly} />/mo</div>
+              <div style={{ fontSize: 10, color: 'var(--accent3)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}><D amount={s.monthly} />/mo</div>
             </div>
           ))}
           {subs.filter(s => recentMonths.filter(m => (s.byMonth[m] || 0) > 0).length <= 1).length === 0 && (
@@ -720,7 +720,7 @@ function KPICard({ label, value, sub, color, glow }: { label: string; value: Rea
 function SummaryCell({ val, label, color, small }: { val: React.ReactNode; label: string; color: string; small?: boolean }) {
   return (
     <div style={{ textAlign: 'center' as const, padding: 16, background: 'var(--surface2)', borderRadius: 12 }}>
-      <div style={{ fontFamily: 'Syne, sans-serif', fontSize: small ? 11 : 15, fontWeight: 800, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{val}</div>
+      <div style={{ fontFamily: 'var(--font-serif)', fontSize: small ? 11 : 15, fontWeight: 800, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{val}</div>
       <div style={{ fontSize: 9, color: 'var(--muted)', letterSpacing: '0.15em', textTransform: 'uppercase' as const, marginTop: 4 }}>{label}</div>
     </div>
   )
@@ -821,7 +821,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   tab: {
     padding: '7px 18px', borderRadius: 7, cursor: 'pointer',
-    fontFamily: "'DM Mono', monospace", fontSize: 12, fontWeight: 500,
+    fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 500,
     color: 'var(--muted)', border: 'none', background: 'none',
     letterSpacing: '0.03em', transition: 'all 0.2s',
   },
@@ -832,13 +832,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', gap: 7,
     padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
     background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.25)',
-    color: 'var(--accent)', fontFamily: "'DM Mono', monospace", fontSize: 11,
+    color: 'var(--accent)', fontFamily: 'var(--font-sans)', fontSize: 11,
     fontWeight: 500, letterSpacing: '0.03em',
   },
   signOutBtn: {
     padding: '7px 12px', borderRadius: 8, cursor: 'pointer',
     background: 'none', border: '1px solid var(--border)',
-    color: 'var(--muted)', fontFamily: "'DM Mono', monospace", fontSize: 11,
+    color: 'var(--muted)', fontFamily: 'var(--font-sans)', fontSize: 11,
   },
   themeToggle: {
     width: 36, height: 20, borderRadius: 10, border: '1px solid var(--border)',
@@ -866,7 +866,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'var(--muted)', marginBottom: 10, fontWeight: 500,
   },
   cardValue: {
-    fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 800,
+    fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 800,
     lineHeight: 1, letterSpacing: -1,
   },
   cardSub: { fontSize: 11, color: 'var(--muted)', marginTop: 6 },
@@ -894,7 +894,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   filterBtn: {
     padding: '5px 12px', borderRadius: 20, cursor: 'pointer',
-    fontFamily: "'DM Mono', monospace", fontSize: 10, fontWeight: 500,
+    fontFamily: 'var(--font-sans)', fontSize: 10, fontWeight: 500,
     color: 'var(--muted)', border: '1px solid var(--border)', background: 'none',
     letterSpacing: '0.05em',
   },
@@ -903,7 +903,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   searchInput: {
     background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
-    padding: '6px 12px', color: 'var(--text)', fontFamily: "'DM Mono', monospace", fontSize: 11,
+    padding: '6px 12px', color: 'var(--text)', fontFamily: 'var(--font-sans)', fontSize: 11,
     outline: 'none', width: 220, marginLeft: 'auto',
   },
   th: {
@@ -917,7 +917,7 @@ const styles: Record<string, React.CSSProperties> = {
   pageBtn: {
     padding: '5px 10px', background: 'var(--surface2)', border: '1px solid var(--border)',
     borderRadius: 6, cursor: 'pointer', color: 'var(--muted)', fontSize: 11,
-    fontFamily: "'DM Mono', monospace",
+    fontFamily: 'var(--font-sans)',
   },
   pageBtnActive: { color: 'var(--text)', borderColor: 'var(--accent)', background: 'rgba(0,229,160,0.05)' },
   insightCard: {
