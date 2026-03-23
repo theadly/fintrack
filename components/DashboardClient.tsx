@@ -4,6 +4,24 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { Transaction, CAT_COLORS, CAT_ICONS, fmtDate, fmtMonth } from '@/lib/utils'
 import { createClient } from '@/lib/supabase-browser'
 import { useRouter } from 'next/navigation'
+import { DirhamSymbol } from '@/components/DirhamSymbol'
+
+// Inline helper: symbol + number, per CBUAE guidelines (symbol left, same height, space between)
+function D({ amount, decimals = 0, suffix = '' }: { amount: number; decimals?: number; suffix?: string }) {
+  const num = decimals > 0 ? amount.toFixed(decimals) : Math.round(amount).toLocaleString()
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.18em' }}>
+      <DirhamSymbol />
+      <span>{num}{suffix}</span>
+    </span>
+  )
+}
+
+// Plain string version for use in title= and data-tip= attributes
+function dStr(amount: number, decimals = 0): string {
+  const num = decimals > 0 ? amount.toFixed(decimals) : Math.round(amount).toLocaleString()
+  return `\u20C3 ${num}`
+}
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface Props {
@@ -184,7 +202,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
     return (
       <svg width={size} height={size} style={{ flexShrink: 0 }}>
         {paths}
-        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontFamily="Syne,sans-serif" fontSize={13} fontWeight={800}>AED</text>
+        <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text)" fontFamily="Syne,sans-serif" fontSize={13} fontWeight={800}>{'\u20C3'}</text>
         <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text)" fontFamily="Syne,sans-serif" fontSize={11} fontWeight={700}>{Math.round(totalSpend / 1000)}K</text>
       </svg>
     )
@@ -261,10 +279,10 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
 
             {/* KPIs */}
             <div style={s.grid4}>
-              <KPICard label="Total Spent" value={`AED ${Math.round(totalSpend).toLocaleString()}`} sub={`${debits.length} debit transactions`} color="var(--accent2)" glow="red" />
-              <KPICard label="Total Received" value={`AED ${Math.round(totalReceived).toLocaleString()}`} sub="Credit payments & returns" color="var(--accent)" glow="green" />
-              <KPICard label="Net Cash Flow" value={`${net >= 0 ? '+' : ''}AED ${Math.round(Math.abs(net)).toLocaleString()}`} sub={`${days}-day period`} color={net >= 0 ? 'var(--accent)' : 'var(--accent2)'} glow={net >= 0 ? 'green' : 'red'} />
-              <KPICard label="Avg Daily Spend" value={`AED ${days > 0 ? Math.round(totalSpend / days).toLocaleString() : 0}`} sub={`AED ${days > 0 ? Math.round(totalSpend / days * 30).toLocaleString() : 0}/mo equivalent`} color="var(--accent3)" />
+              <KPICard label="Total Spent" value={<D amount={totalSpend} />} sub={`${debits.length} debit transactions`} color="var(--accent2)" glow="red" />
+              <KPICard label="Total Received" value={<D amount={totalReceived} />} sub="Credit payments & returns" color="var(--accent)" glow="green" />
+              <KPICard label="Net Cash Flow" value={<span>{net >= 0 ? '+' : '-'}<D amount={Math.abs(net)} /></span>} sub={`${days}-day period`} color={net >= 0 ? 'var(--accent)' : 'var(--accent2)'} glow={net >= 0 ? 'green' : 'red'} />
+              <KPICard label="Avg Daily Spend" value={<D amount={days > 0 ? totalSpend / days : 0} />} sub={<span><D amount={days > 0 ? totalSpend / days * 30 : 0} />/mo equivalent</span>} color="var(--accent3)" />
             </div>
 
             {/* Monthly cards */}
@@ -278,11 +296,11 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                 return (
                   <div key={m} style={s.card}>
                     <div style={s.cardLabel}>{fmtMonth(m)}</div>
-                    <div style={{ ...s.cardValue, fontSize: 22, color }}>{`AED ${Math.round(val).toLocaleString()}`}</div>
+                    <div style={{ ...s.cardValue, fontSize: 22, color }}><D amount={val} /></div>
                     <div style={s.cardSub}>{daysActive} active days · {mTxns.length} transactions</div>
                     <div style={s.summaryGrid}>
                       <SummaryCell val={String(mTxns.length)} label="Txns" color={color} />
-                      <SummaryCell val={`AED ${daysActive > 0 ? Math.round(val / daysActive) : 0}`} label="Avg/day" color="var(--accent3)" />
+                      <SummaryCell val={<D amount={daysActive > 0 ? val / daysActive : 0} />} label="Avg/day" color="var(--accent3)" />
                       <SummaryCell val={topM ? topM[0].slice(0, 10) : '—'} label="Top" color="var(--accent4)" small />
                     </div>
                   </div>
@@ -318,7 +336,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                       <div style={{ fontSize: 9, color: 'var(--muted)', width: 16, textAlign: 'center' }}>{i + 1}</div>
                       <div style={{ flex: 1, fontSize: 12 }}>{name.length > 22 ? name.slice(0, 22) + '…' : name}</div>
                       <div style={{ fontSize: 10, color: 'var(--muted)', width: 50, textAlign: 'right' }}>{merchantCounts[name]}x</div>
-                      <div style={{ fontSize: 12, color: 'var(--accent2)', fontFamily: 'Syne, sans-serif', fontWeight: 700, width: 80, textAlign: 'right' }}>AED {amt.toFixed(0)}</div>
+                      <div style={{ fontSize: 12, color: 'var(--accent2)', fontFamily: 'Syne, sans-serif', fontWeight: 700, width: 80, textAlign: 'right' }}><D amount={amt} /></div>
                     </div>
                   ))}
                 </div>
@@ -336,10 +354,10 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                   return (
                     <div key={m} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%' }}>
                       <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
-                        <div title={`AED ${v.toFixed(0)}`} style={{ width: '100%', height: h, background: `${c}22`, border: `1px solid ${c}44`, borderBottom: `2px solid ${c}`, borderRadius: '6px 6px 0 0', minHeight: 2 }} />
+                        <div title={dStr(v)} style={{ width: '100%', height: h, background: `${c}22`, border: `1px solid ${c}44`, borderBottom: `2px solid ${c}`, borderRadius: '6px 6px 0 0', minHeight: 2 }} />
                       </div>
                       <div style={{ fontSize: 9, color: 'var(--muted)', letterSpacing: '0.1em' }}>{fmtMonth(m).slice(0, 3).toUpperCase()}</div>
-                      <div style={{ fontSize: 10, color: c }}>AED {Math.round(v / 1000)}K</div>
+                      <div style={{ fontSize: 10, color: c }}><D amount={v / 1000} decimals={1} suffix="K" /></div>
                     </div>
                   )
                 })}
@@ -362,7 +380,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                 return (
                   <div key={cat} style={{ ...s.card, borderTop: `2px solid ${CAT_COLORS[cat]}33` }}>
                     <div style={s.cardLabel}>{CAT_ICONS[cat]} {cat.toUpperCase()}</div>
-                    <div style={{ ...s.cardValue, fontSize: 22, color: CAT_COLORS[cat] }}>AED {total.toFixed(0)}</div>
+                    <div style={{ ...s.cardValue, fontSize: 22, color: CAT_COLORS[cat] }}><D amount={total} /></div>
                     <div style={s.cardSub}>{pct}% of total spend</div>
                     <div style={{ marginTop: 10, display: 'flex', gap: 6, fontSize: 10, color: 'var(--muted)', flexWrap: 'wrap' as const }}>
                       {months.map(m => <span key={m}>{fmtMonth(m).slice(0, 3)}: {(catMonthly[cat]?.[m] || 0).toFixed(0)}</span>)}
@@ -383,7 +401,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                       <div style={{ flex: 1, height: 8, background: 'var(--surface2)', borderRadius: 4, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${val / catSorted[0][1] * 100}%`, background: CAT_COLORS[cat], borderRadius: 4 }} />
                       </div>
-                      <div style={{ fontSize: 10, color: 'var(--muted)', width: 70, textAlign: 'right' as const }}>AED {val.toFixed(0)}</div>
+                      <div style={{ fontSize: 10, color: 'var(--muted)', width: 70, textAlign: 'right' as const }}><D amount={val} /></div>
                     </div>
                   ))}
                 </div>
@@ -441,8 +459,8 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
                 <table style={{ width: '100%', borderCollapse: 'collapse' as const }}>
                   <thead>
                     <tr>
-                      {['Date', 'Merchant', 'Category', 'Status', 'Amount (AED)'].map(h => (
-                        <th key={h} style={{ ...s.th, textAlign: h === 'Amount (AED)' ? 'right' as const : 'left' as const }}>{h}</th>
+                      {['Date', 'Merchant', 'Category', 'Status', 'Amount'].map(h => (
+                        <th key={h} style={{ ...s.th, textAlign: h === 'Amount' ? 'right' as const : 'left' as const }}>{h === 'Amount' ? <span style={{display:'inline-flex',alignItems:'center',gap:'0.2em'}}><DirhamSymbol size="0.9em" /> Amount</span> : h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -523,7 +541,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function KPICard({ label, value, sub, color, glow }: { label: string; value: string; sub: string; color: string; glow?: string }) {
+function KPICard({ label, value, sub, color, glow }: { label: string; value: React.ReactNode; sub: React.ReactNode; color: string; glow?: string }) {
   return (
     <div style={{ ...styles.card, ...(glow ? { '--glow-color': glow === 'green' ? 'var(--accent)' : 'var(--accent2)' } as React.CSSProperties : {}) }}>
       {glow && <div style={{ position: 'absolute', top: -1, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${glow === 'green' ? 'var(--accent)' : 'var(--accent2)'}, transparent)` }} />}
@@ -534,7 +552,7 @@ function KPICard({ label, value, sub, color, glow }: { label: string; value: str
   )
 }
 
-function SummaryCell({ val, label, color, small }: { val: string; label: string; color: string; small?: boolean }) {
+function SummaryCell({ val, label, color, small }: { val: React.ReactNode; label: string; color: string; small?: boolean }) {
   return (
     <div style={{ textAlign: 'center' as const, padding: 16, background: 'var(--surface2)', borderRadius: 12 }}>
       <div style={{ fontFamily: 'Syne, sans-serif', fontSize: small ? 11 : 15, fontWeight: 800, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{val}</div>
@@ -577,43 +595,43 @@ function getInsights(
   return [
     {
       icon: '🍽️', color: '#ff6b6b',
-      title: `Food & Dining is your #1 expense — AED ${foodTotal.toFixed(0)}`,
-      body: `${foodPct}% of your total spend goes to food. Deliveroo alone accounts for AED ${deliverooSpend.toFixed(0)} across ${merchantCounts['Deliveroo'] || 0} orders. Cutting 3 orders/week could save ~AED 1,000/month.`,
+      title: `Food & Dining is your #1 expense — \u20C3 ${foodTotal.toFixed(0)}`,
+      body: `${foodPct}% of your total spend goes to food. Deliveroo alone accounts for \u20C3 ${deliverooSpend.toFixed(0)} across ${merchantCounts['Deliveroo'] || 0} orders. Cutting 3 orders/week could save ~\u20C3 1,000/month.`,
       pill: '💡 Actionable', pillColor: '#f5c842'
     },
     {
       icon: '💻', color: '#60a5fa',
-      title: `AED ${subscTotal.toFixed(0)} in tech subscriptions — audit needed`,
-      body: `Apple services alone billed across multiple charges in different amounts. Check for duplicate family plan charges or unused apps. A full subscription audit could recover AED 300–500/month.`,
+      title: `\u20C3 ${subscTotal.toFixed(0)} in tech subscriptions — audit needed`,
+      body: `Apple services alone billed across multiple charges in different amounts. Check for duplicate family plan charges or unused apps. A full subscription audit could recover \u20C3 300–500/month.`,
       pill: '⚠️ Audit Now', pillColor: '#ff6b6b'
     },
     {
       icon: '📈', color: '#ff6b6b',
-      title: `${maxMonthName} was your highest spend month — AED ${maxMonthVal.toFixed(0)}`,
+      title: `${maxMonthName} was your highest spend month — \u20C3 ${maxMonthVal.toFixed(0)}`,
       body: `Your spending varies significantly month to month. Track monthly totals regularly to distinguish one-off spikes from structural overspending patterns.`,
       pill: '📊 Context', pillColor: '#7b8ff5'
     },
     {
       icon: '💊', color: '#f472b6',
-      title: `Mayfair Clinic: AED ${(merchantTotals['MAYFAIR CLINIC'] || 0).toFixed(0)} — Mounjaro costs`,
-      body: `Recurring charges of AED 1,499 suggest a monthly Mounjaro prescription. An intentional health investment. Verify whether your Four Seasons role includes healthcare benefits that could offset this.`,
+      title: `Mayfair Clinic: \u20C3 ${(merchantTotals['MAYFAIR CLINIC'] || 0).toFixed(0)} — Mounjaro costs`,
+      body: `Recurring charges of \u20C3 1,499 suggest a monthly Mounjaro prescription. An intentional health investment. Verify whether your Four Seasons role includes healthcare benefits that could offset this.`,
       pill: '✅ Keep Going', pillColor: '#00e5a0'
     },
     {
       icon: '🏠', color: '#f5c842',
-      title: `Net cash flow: ${net >= 0 ? '+' : ''}AED ${Math.abs(net).toFixed(0)}`,
-      body: `Over ${days} days you received AED ${totalReceived.toFixed(0)} and spent AED ${totalSpend.toFixed(0)}. With a housing allowance covering rent, consistent savings of AED 5,000–8,000/month toward a 1.5M property target is realistic.`,
+      title: `Net cash flow: ${net >= 0 ? '+' : ''}\u20C3 ${Math.abs(net).toFixed(0)}`,
+      body: `Over ${days} days you received \u20C3 ${totalReceived.toFixed(0)} and spent \u20C3 ${totalSpend.toFixed(0)}. With a housing allowance covering rent, consistent savings of \u20C3 5,000–8,000/month toward a 1.5M property target is realistic.`,
       pill: '🏡 On Track', pillColor: '#00e5a0'
     },
     {
       icon: '🛍️', color: '#fbbf24',
-      title: `Shopping hit AED ${(catTotals['Shopping'] || 0).toFixed(0)} — mostly impulse channels`,
-      body: `Temu, Namshi, Amazon.ae, and Adidas spread across the period. Consider a monthly shopping cap of AED 800 and a 24-hour rule before confirming online orders.`,
+      title: `Shopping hit \u20C3 ${(catTotals['Shopping'] || 0).toFixed(0)} — mostly impulse channels`,
+      body: `Temu, Namshi, Amazon.ae, and Adidas spread across the period. Consider a monthly shopping cap of \u20C3 800 and a 24-hour rule before confirming online orders.`,
       pill: '💡 Set a Cap', pillColor: '#f5c842'
     },
     {
       icon: '💳', color: '#6b7280',
-      title: `TABBY repayments: AED ${(merchantTotals['TABBY'] || 0).toFixed(0)} across multiple charges`,
+      title: `TABBY repayments: \u20C3 ${(merchantTotals['TABBY'] || 0).toFixed(0)} across multiple charges`,
       body: `Active BNPL installment plan. TABBY spending is invisible in real-time budgeting — ensure you're accounting for upcoming installments in your monthly outgoings.`,
       pill: '🔔 Track It', pillColor: '#6b7280'
     },
