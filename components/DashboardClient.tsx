@@ -71,7 +71,7 @@ const MONTH_COLORS = ['#7b8ff5', '#ff6b6b', '#f5c842', '#34d399', '#a78bfa', '#f
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function DashboardClient({ initialTransactions, userEmail }: Props) {
   const [txns, setTxns] = useState<Transaction[]>(initialTransactions)
-  const [activePage, setActivePage] = useState<'overview' | 'categories' | 'transactions' | 'advisor'>('overview')
+  const [activePage, setActivePage] = useState<'overview' | 'categories' | 'transactions' | 'advisor' | 'subscriptions'>('overview')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [toast, setToast] = useState<Toast | null>(null)
   const [txnFilter, setTxnFilter] = useState('all')
@@ -247,7 +247,7 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
           ADLY / <span style={{ color: 'var(--accent)' }}>FINTRACK</span>
         </div>
         <div style={s.tabs}>
-          {(['overview', 'categories', 'transactions', 'advisor'] as const).map(page => (
+          {(['overview', 'categories', 'transactions', 'subscriptions', 'advisor'] as const).map(page => (
             <button key={page} style={{ ...s.tab, ...(activePage === page ? s.tabActive : {}) }}
               onClick={() => setActivePage(page)}>
               {page.charAt(0).toUpperCase() + page.slice(1)}
@@ -528,6 +528,169 @@ export default function DashboardClient({ initialTransactions, userEmail }: Prop
             </div>
           </div>
         )}
+
+        {/* ── SUBSCRIPTIONS ── */}
+        {activePage === 'subscriptions' && (
+          <SubscriptionsPage txns={txns} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── SUBSCRIPTIONS PAGE ──────────────────────────────────────────────────────
+const SUBS_CONFIG = [
+  { name: 'Apple Services',      key: (t: Transaction) => t.details === 'APPLE.COM/BILL',             icon: '🍎', color: '#a8b2c1', note: 'Multiple charge amounts — likely family plan + app subs' },
+  { name: 'Netflix',             key: (t: Transaction) => t.details === 'NETFLIX.COM',                icon: '🎬', color: '#e50914', note: 'Streaming subscription' },
+  { name: 'Spotify',             key: (t: Transaction) => t.details.startsWith('Spotify'),            icon: '🎵', color: '#1db954', note: 'Two account IDs — likely you and Laila' },
+  { name: 'Adobe Premiere Pro',  key: (t: Transaction) => t.details === 'Adobe Premiere Pro',         icon: '🎞️', color: '#9999ff', note: 'Video editing' },
+  { name: 'Adobe.com',           key: (t: Transaction) => t.details === 'Adobe.com',                  icon: '🅰️', color: '#ff0000', note: 'Separate Adobe product' },
+  { name: 'Google One',          key: (t: Transaction) => t.details === 'Google One',                 icon: '🗂️', color: '#4285f4', note: 'Cloud storage' },
+  { name: 'Google Workspace',    key: (t: Transaction) => t.details.includes('Google Workspace'),     icon: '📧', color: '#34a853', note: 'Business email (theadly.com)' },
+  { name: 'YouTube Premium',     key: (t: Transaction) => t.details === 'GOOGLE*YOUTUBE MEMBER',      icon: '▶️', color: '#ff0000', note: 'Ad-free YouTube' },
+  { name: 'ChatGPT / OpenAI',    key: (t: Transaction) => t.details === 'OPENAI *CHATGPT SUBSCR',     icon: '🤖', color: '#00e5a0', note: 'AI subscription' },
+  { name: 'Audible',             key: (t: Transaction) => t.details === 'Audible',                    icon: '🎧', color: '#f5a623', note: 'Audiobooks' },
+  { name: 'PlayStation Network', key: (t: Transaction) => t.details === 'PlayStation Network',        icon: '🎮', color: '#003087', note: 'PS Plus / PS Now' },
+  { name: 'Virgin Mobile',       key: (t: Transaction) => t.details.startsWith('Virgin Mobile'),      icon: '📱', color: '#e10a0a', note: 'Mobile plan — likely two SIMs' },
+  { name: 'DU Mobile',           key: (t: Transaction) => t.details.startsWith('DU NO.'),             icon: '📶', color: '#6b2fa0', note: 'Mobile/home internet' },
+  { name: 'DEWA',                key: (t: Transaction) => t.details.startsWith('DEWA') || t.details.startsWith('DUBAI ELECTRICITY'), icon: '⚡', color: '#f5c842', note: 'Electricity & water' },
+  { name: 'Joga Bonito Academy', key: (t: Transaction) => t.details === 'JOGA BONITO ACADEMY LL',     icon: '⚽', color: '#34d399', note: 'Recurring activity fee' },
+  { name: 'Mayfair Clinic',      key: (t: Transaction) => t.details === 'MAYFAIR CLINIC',             icon: '💉', color: '#f472b6', note: 'Mounjaro prescription' },
+  { name: 'TAP*Keeta',           key: (t: Transaction) => t.details.includes('Keeta'),                icon: '🛵', color: '#ff6b6b', note: 'Food delivery service' },
+  { name: 'TABBY',               key: (t: Transaction) => t.details === 'TABBY',                      icon: '💳', color: '#6b7280', note: 'BNPL installments' },
+]
+
+function SubscriptionsPage({ txns }: { txns: Transaction[] }) {
+  const debits = txns.filter(t => t.type === 'Debit' && t.status !== 'REVERSED')
+  const months = [...new Set(debits.map(t => t.date.slice(0, 7)))].sort()
+  const recentMonths = months.slice(-3)
+
+  const subs = SUBS_CONFIG.map(cfg => {
+    const matched = debits.filter(t => cfg.key(t))
+    const total = matched.reduce((s, t) => s + t.amount, 0)
+    const byMonth: Record<string, number> = {}
+    months.forEach(m => {
+      byMonth[m] = matched.filter(t => t.date.startsWith(m)).reduce((s, t) => s + t.amount, 0)
+    })
+    const nonZero = Object.values(byMonth).filter(v => v > 0)
+    const monthly = nonZero.length ? nonZero.reduce((a, b) => a + b, 0) / nonZero.length : 0
+    return { ...cfg, total, byMonth, monthly }
+  }).filter(s => s.total > 0)
+
+  const monthlyBurn = subs.reduce((s, sub) => s + sub.monthly, 0)
+  const annualProjection = monthlyBurn * 12
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <SectionLabel>Subscription Tracker — {subs.length} Recurring Charges Detected</SectionLabel>
+      </div>
+
+      {/* Summary bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div style={styles.card}>
+          <div style={styles.cardLabel}>Est. Monthly Burn</div>
+          <div style={{ ...styles.cardValue, color: 'var(--accent2)', fontSize: 26 }}><D amount={monthlyBurn} /></div>
+          <div style={styles.cardSub}>across {subs.length} services</div>
+        </div>
+        <div style={styles.card}>
+          <div style={styles.cardLabel}>Annual Projection</div>
+          <div style={{ ...styles.cardValue, color: 'var(--accent3)', fontSize: 26 }}><D amount={annualProjection} /></div>
+          <div style={styles.cardSub}>if all continue unchanged</div>
+        </div>
+        <div style={styles.card}>
+          <div style={styles.cardLabel}>Potential Savings</div>
+          <div style={{ ...styles.cardValue, color: 'var(--accent)', fontSize: 26 }}><D amount={monthlyBurn * 0.25} />/mo</div>
+          <div style={styles.cardSub}>cancel 3–4 low-use subs</div>
+        </div>
+      </div>
+
+      {/* Sub cards grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 12, marginBottom: 24 }}>
+        {subs.sort((a, b) => b.monthly - a.monthly).map(sub => {
+          const hits = recentMonths.filter(m => (sub.byMonth[m] || 0) > 0).length
+          const isActive = hits >= 2
+          const statusColor = isActive ? 'var(--accent2)' : 'var(--accent3)'
+          const statusLabel = isActive ? 'ACTIVE' : 'SPORADIC'
+
+          return (
+            <div key={sub.name} style={{
+              background: 'var(--surface2)', borderRadius: 12, padding: 14,
+              border: '1px solid var(--border)', borderLeft: `2px solid ${sub.color}55`,
+              display: 'flex', flexDirection: 'column', gap: 10
+            }}>
+              {/* Header row */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ fontSize: 20, lineHeight: 1 }}>{sub.icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{sub.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>{sub.note}</div>
+                </div>
+                <span style={{ fontSize: 8, letterSpacing: '0.1em', padding: '2px 7px', borderRadius: 8, background: `${statusColor}11`, color: statusColor, border: `1px solid ${statusColor}22`, flexShrink: 0 }}>{statusLabel}</span>
+              </div>
+
+              {/* Month dots + amount */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {recentMonths.map(m => {
+                    const v = sub.byMonth[m] || 0
+                    return (
+                      <div key={m} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                        <div title={v > 0 ? dStr(v) : '—'} style={{
+                          width: 32, height: 32, borderRadius: 6,
+                          background: v > 0 ? `${sub.color}22` : 'var(--surface)',
+                          border: `1px solid ${v > 0 ? sub.color + '55' : 'var(--border)'}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 9, color: v > 0 ? sub.color : 'var(--muted)'
+                        }}>
+                          {v > 0 ? Math.round(v) : '–'}
+                        </div>
+                        <div style={{ fontSize: 8, color: 'var(--muted)' }}>{fmtMonth(m).slice(0, 3)}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div style={{ textAlign: 'right' as const }}>
+                  <div style={{ fontFamily: 'Syne, sans-serif', fontSize: 15, fontWeight: 800, color: sub.color }}><D amount={sub.monthly} /></div>
+                  <div style={{ fontSize: 9, color: 'var(--muted)' }}>/month avg</div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Footer breakdown */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={styles.card}>
+          <div style={styles.cardLabel}>Top Monthly Charges</div>
+          {subs.sort((a, b) => b.monthly - a.monthly).slice(0, 8).map(s => (
+            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+              <div style={{ fontSize: 11, flex: 1 }}>{s.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--accent2)', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}><D amount={s.monthly} /></div>
+            </div>
+          ))}
+        </div>
+        <div style={styles.card}>
+          <div style={styles.cardLabel}>Cancel Candidates</div>
+          <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 12, lineHeight: 1.6 }}>
+            These appear infrequently — worth reviewing if still needed.
+          </div>
+          {subs.filter(s => {
+            const hits = recentMonths.filter(m => (s.byMonth[m] || 0) > 0).length
+            return hits <= 1
+          }).map(s => (
+            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', background: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 16 }}>{s.icon}</div>
+              <div style={{ flex: 1, fontSize: 11 }}>{s.name}</div>
+              <div style={{ fontSize: 10, color: 'var(--accent3)', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}><D amount={s.monthly} />/mo</div>
+            </div>
+          ))}
+          {subs.filter(s => recentMonths.filter(m => (s.byMonth[m] || 0) > 0).length <= 1).length === 0 && (
+            <div style={{ fontSize: 11, color: 'var(--muted)' }}>All subscriptions are active — no obvious candidates.</div>
+          )}
+        </div>
       </div>
     </div>
   )
