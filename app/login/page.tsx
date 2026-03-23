@@ -31,10 +31,10 @@ export default function LoginPage() {
       minHeight: '100vh', background: '#0a0a0f', display: 'flex',
       alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500&display=swap')`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap')`}</style>
       <div style={{ width: '100%', maxWidth: 400, padding: '0 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 800, fontSize: 24, letterSpacing: -1, color: '#e8e8f0' }}>
+          <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, fontSize: 24, letterSpacing: -1, color: '#e8e8f0' }}>
             ADLY / <span style={{ color: '#00e5a0' }}>FINTRACK</span>
           </div>
           <div style={{ fontSize: 11, color: '#6b6b85', marginTop: 8, letterSpacing: '0.1em' }}>PERSONAL FINANCE DASHBOARD</div>

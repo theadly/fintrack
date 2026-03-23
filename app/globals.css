@@ -12,8 +12,9 @@
   --text: #e8e8f0;
   --muted: #6b6b85;
   --header-bg: rgba(10,10,15,0.92);
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Geist', system-ui, sans-serif;
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
 }
 
 body.light {
@@ -34,7 +35,6 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
 
