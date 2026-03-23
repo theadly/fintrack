@@ -109,8 +109,10 @@ export async function POST(request: NextRequest) {
       }
 
       let date = ''
-      // "22 Mar 2026" format
+      // "22 Mar 2026" format (DD Mon YYYY)
       const dm = rawDate.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/)
+      // "Nov 30, 2025" format (Mon DD, YYYY)
+      const dm2 = rawDate.match(/([A-Za-z]+)\s+(\d{1,2}),?\s*(\d{4})/)
       if (dm) {
         const months: Record<string, string> = {
           jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
@@ -119,6 +121,14 @@ export async function POST(request: NextRequest) {
         const m = months[dm[2].toLowerCase().slice(0, 3)]
         if (!m) { skippedRows++; continue }
         date = `${dm[3]}-${m}-${dm[1].padStart(2, '0')}`
+      } else if (dm2) {
+        const months: Record<string, string> = {
+          jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
+          jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12'
+        }
+        const m = months[dm2[1].toLowerCase().slice(0, 3)]
+        if (!m) { skippedRows++; continue }
+        date = `${dm2[3]}-${m}-${dm2[2].padStart(2, '0')}`
       } else if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
         date = rawDate
       } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
